@@ -1,24 +1,36 @@
-FROM buildpack-deps:jessie-scm
+FROM alpine:3.5
 
-# gcc for cgo
-MAINTAINER justin.h <justin@5nas.cc>
-  
-RUN apt-get update && apt-get install -y --no-install-recommends \
-		g++ \
-		gcc \
-		libc6-dev \
-		make \
-		pkg-config \
-	&& rm -rf /var/lib/apt/lists/*
+# install gcc golang *********************
+
+RUN apk add --no-cache ca-certificates
 
 ENV GOLANG_VERSION 1.8
-ENV GOLANG_DOWNLOAD_URL https://golang.org/dl/go$GOLANG_VERSION.linux-amd64.tar.gz
-ENV GOLANG_DOWNLOAD_SHA256 53ab94104ee3923e228a2cb2116e5e462ad3ebaeea06ff04463479d7f12d27ca
+ENV GOLANG_SRC_URL https://golang.org/dl/go$GOLANG_VERSION.src.tar.gz
+ENV GOLANG_SRC_SHA256 406865f587b44be7092f206d73fc1de252600b79b3cacc587b74b5ef5c623596
 
-RUN curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang.tar.gz \
-	&& echo "$GOLANG_DOWNLOAD_SHA256  golang.tar.gz" | sha256sum -c - \
+# https://golang.org/issue/14851
+COPY no-pic.patch /
+
+RUN set -ex \
+	&& apk add --no-cache --virtual .build-deps \
+		bash \
+		gcc \
+		musl-dev \
+		openssl \
+		go \
+	\
+	&& export GOROOT_BOOTSTRAP="$(go env GOROOT)" \
+	\
+	&& wget -q "$GOLANG_SRC_URL" -O golang.tar.gz \
+	&& echo "$GOLANG_SRC_SHA256  golang.tar.gz" | sha256sum -c - \
 	&& tar -C /usr/local -xzf golang.tar.gz \
-	&& rm golang.tar.gz
+	&& rm golang.tar.gz \
+	&& cd /usr/local/go/src \
+	&& patch -p2 -i /no-pic.patch \
+	&& ./make.bash \
+	\
+	&& rm -rf /*.patch \
+	&& apk del .build-deps
 
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
@@ -28,7 +40,7 @@ WORKDIR $GOPATH
 
 COPY go-wrapper /usr/local/bin/
 
-# CMAKE install
+# install CMAKE *********************
   RUN apk add --no-cache curl build-base \
       && curl -O https://cmake.org/files/v3.7/cmake-3.7.2.tar.gz \
       && mv cmake-3.7.2.tar.gz /tmp/ && cd /tmp \
