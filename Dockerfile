@@ -18,3 +18,4 @@ FROM golang:1.8-alpine
       
   mkdir -p "/workdata"
   VOLUME /workdata/files
+  WORKDIR ${REDMINE_INSTALL_DIR}
