@@ -2,6 +2,8 @@ FROM golang:1.8-alpine
 
 # install gcc golang *********************
  
+# install bash
+  RUN apk add  bash
 
 # install CMAKE *********************
   RUN apk add --no-cache curl build-base \
