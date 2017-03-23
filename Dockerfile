@@ -3,8 +3,8 @@ FROM golang:1.8-alpine
 # install gcc golang *********************
  
 # install bash
-  RUN apk add --no-cache --update-cache bash
-
+  RUN apk add --no-cache --update-cache bash git
+  
 # install CMAKE *********************
   RUN apk add --no-cache curl build-base \
       && curl -O https://cmake.org/files/v3.7/cmake-3.7.2.tar.gz \
