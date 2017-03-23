@@ -17,5 +17,5 @@ FROM golang:1.8-alpine
       && cd / && rm -r /tmp/cmake-3.7.2
       
   mkdir -p "/workdata"
-  VOLUME /workdata/files
-  WORKDIR ${REDMINE_INSTALL_DIR}
+  VOLUME /workdata
+  WORKDIR /workdata
