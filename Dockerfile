@@ -16,6 +16,7 @@ FROM golang:1.8-alpine
       && make install \
       && cd / && rm -r /tmp/cmake-3.7.2
       
-  mkdir -p "/workdata"
-  VOLUME /workdata
+ 
+  RUN mkdir -p /workdata
+  VOLUME ["/workdata"]
   WORKDIR /workdata
